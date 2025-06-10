@@ -1,29 +1,124 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Test Paiement PayPal</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Réserver – Rword Manar</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 3rem auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      text-align: center;
+      color: #0d47a1;
+      margin-bottom: 2rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .btn {
+      background-color: #ffc107;
+      color: #0d47a1;
+      padding: 0.9rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+      display: block;
+      width: 100%;
+      transition: background 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #ffb300;
+    }
+
+    #confirmation-message, #payment-box {
+      margin-top: 2rem;
+      background-color: #e3f2fd;
+      padding: 1rem;
+      border-left: 5px solid #0d47a1;
+      border-radius: 8px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 4rem;
+      font-size: 0.9rem;
+      color: #777;
+    }
+  </style>
 </head>
 <body>
-  <h1>Réservation + Paiement</h1>
+  <div class="container">
+    <h1>Réserver une séance</h1>
+    <form id="booking-form">
+      <label for="date">Date :</label>
+      <input type="date" id="date" required>
 
-  <form id="booking-form">
-    <label>Date : <input type="date" id="date" required></label><br>
-    <label>Heure : <input type="time" id="time" required></label><br>
-    <label>Nom : <input type="text" id="name" required></label><br>
-    <button type="submit">Réserver</button>
-  </form>
+      <label for="time">Heure :</label>
+      <input type="time" id="time" required>
 
-  <p id="confirmation-message"></p>
+      <label for="specialty">Spécialité :</label>
+      <select id="specialty" required>
+        <option value="Juridique">Juridique</option>
+        <option value="Médical">Médical</option>
+        <option value="Administratif">Administratif</option>
+      </select>
 
-  <div id="payment-box" style="display:none;">
-    <h3>Paiement PayPal</h3>
-    <div id="paypal-button-container"></div>
+      <label for="name">Nom complet :</label>
+      <input type="text" id="name" placeholder="Votre nom" required>
+
+      <label for="email">Adresse e-mail :</label>
+      <input type="email" id="email" placeholder="exemple@mail.com" required>
+
+      <button type="submit" class="btn">Réserver</button>
+    </form>
+
+    <div id="confirmation-message"></div>
+    <div id="payment-box" style="display:none;">
+      <h3>Paiement requis</h3>
+      <p>💳 Pour confirmer votre réservation, veuillez effectuer le paiement :</p>
+      <div id="paypal-button-container"></div>
+    </div>
   </div>
 
-  <!-- PayPal SDK (client ID sandbox fourni par PayPal) -->
+  <footer>
+    &copy; 2025 Rword Manar. Tous droits réservés.
+  </footer>
+
+  <!-- PayPal SDK -->
   <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=EUR"></script>
 
+  <!-- Script JS -->
   <script>
     const form = document.getElementById('booking-form');
     const confirmMsg = document.getElementById('confirmation-message');
@@ -33,22 +128,31 @@
       e.preventDefault();
       const date = document.getElementById('date').value;
       const time = document.getElementById('time').value;
+      const specialty = document.getElementById('specialty').value;
       const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
 
-      confirmMsg.textContent = `✅ Réservation pour ${name} le ${date} à ${time}`;
+      confirmMsg.innerHTML =
+        `<p>✅ Réservation pour <strong>${name}</strong> le <strong>${date}</strong> à <strong>${time}</strong><br>
+        📧 Email : ${email}<br>
+        📘 Spécialité : ${specialty}</p>`;
+
       paymentBox.style.display = 'block';
 
+      // Lancer bouton PayPal
       paypal.Buttons({
-        createOrder: (data, actions) => {
+        createOrder: function(data, actions) {
           return actions.order.create({
             purchase_units: [{
-              amount: { value: '10.00' },
-              description: "Session de traduction"
+              amount: {
+                value: '15.00'
+              },
+              description: `Paiement pour une session ${specialty}`
             }]
           });
         },
-        onApprove: (data, actions) => {
-          return actions.order.capture().then(details => {
+        onApprove: function(data, actions) {
+          return actions.order.capture().then(function(details) {
             document.getElementById('paypal-button-container').innerHTML =
               `<p style="color:green;">✅ Paiement confirmé par ${details.payer.name.given_name}</p>`;
           });
