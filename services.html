@@ -1,99 +1,60 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Réserver – Rword Manar</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Test Paiement PayPal</title>
 </head>
 <body>
-  <main>
-    <section class="features">
-      <h1>Réserver une séance</h1>
-      <form id="booking-form">
-        <label for="date">Date :</label>
-        <input type="date" id="date" required>
+  <h1>Réservation + Paiement</h1>
 
-        <label for="time">Heure :</label>
-        <input type="time" id="time" required>
+  <form id="booking-form">
+    <label>Date : <input type="date" id="date" required></label><br>
+    <label>Heure : <input type="time" id="time" required></label><br>
+    <label>Nom : <input type="text" id="name" required></label><br>
+    <button type="submit">Réserver</button>
+  </form>
 
-        <label for="specialty">Domaine :</label>
-        <select id="specialty" required>
-          <option value="Juridique">Juridique</option>
-          <option value="Médical">Médical</option>
-          <option value="Administratif">Administratif</option>
-        </select>
+  <p id="confirmation-message"></p>
 
-        <label for="email">Adresse e-mail :</label>
-        <input type="email" id="email" placeholder="exemple@mail.com" required>
+  <div id="payment-box" style="display:none;">
+    <h3>Paiement PayPal</h3>
+    <div id="paypal-button-container"></div>
+  </div>
 
-        <label for="phone">Numéro de téléphone :</label>
-        <input type="tel" id="phone" placeholder="+213 6xx xx xx xx" required>
+  <!-- PayPal SDK (client ID sandbox fourni par PayPal) -->
+  <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=EUR"></script>
 
-        <button type="submit" class="btn">Réserver</button>
-      </form>
-
-      <!-- Confirmation de réservation -->
-      <p id="confirmation-message"></p>
-
-      <!-- Section paiement PayPal -->
-      <div id="payment-box" style="display:none; margin-top:2rem;">
-        <h3>Paiement requis</h3>
-        <p>💳 Pour confirmer votre réservation, veuillez effectuer le paiement :</p>
-        <div id="paypal-button-container"></div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <p>&copy; 2025 Rword Manar. Tous droits réservés.</p>
-  </footer>
-
-  <!-- SDK PayPal -->
-  <script src="https://www.paypal.com/sdk/js?client-id=VOTRE_CLIENT_ID&currency=EUR"></script>
-
-  <!-- Script Réservation + Paiement -->
   <script>
-    const bookingForm = document.getElementById('booking-form');
-    const confirmationMessage = document.getElementById('confirmation-message');
+    const form = document.getElementById('booking-form');
+    const confirmMsg = document.getElementById('confirmation-message');
     const paymentBox = document.getElementById('payment-box');
 
-    bookingForm.addEventListener('submit', e => {
+    form.addEventListener('submit', function (e) {
       e.preventDefault();
       const date = document.getElementById('date').value;
       const time = document.getElementById('time').value;
-      const specialty = document.getElementById('specialty').value;
-      const email = document.getElementById('email').value;
-      const phone = document.getElementById('phone').value;
+      const name = document.getElementById('name').value;
 
-      confirmationMessage.textContent =
-        `✅ Réservation confirmée pour ${specialty} le ${date} à ${time}.
-         📧 Email : ${email} | 📞 Téléphone : ${phone}`;
-
+      confirmMsg.textContent = `✅ Réservation pour ${name} le ${date} à ${time}`;
       paymentBox.style.display = 'block';
-      initPayPal();
-    });
 
-    function initPayPal() {
       paypal.Buttons({
-        createOrder: function(data, actions) {
+        createOrder: (data, actions) => {
           return actions.order.create({
             purchase_units: [{
-              amount: {
-                value: '15.00'
-              },
-              description: 'Paiement pour session de traduction'
+              amount: { value: '10.00' },
+              description: "Session de traduction"
             }]
           });
         },
-        onApprove: function(data, actions) {
-          return actions.order.capture().then(function(details) {
+        onApprove: (data, actions) => {
+          return actions.order.capture().then(details => {
             document.getElementById('paypal-button-container').innerHTML =
-              `<p style="color:green;">✅ Paiement effectué avec succès par ${details.payer.name.given_name}</p>`;
+              `<p style="color:green;">✅ Paiement confirmé par ${details.payer.name.given_name}</p>`;
           });
         }
       }).render('#paypal-button-container');
-    }
+    });
   </script>
 </body>
 </html>
