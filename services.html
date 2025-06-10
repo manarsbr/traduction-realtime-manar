@@ -41,7 +41,8 @@
         <button type="submit" class="btn">Réserver</button>
       </form>
       <p id="confirmation-message"></p>
-    </section>
+<div id="paypal-button-container" style="margin-top:2rem;"></div>
+
   </main>
 
   <footer>
@@ -64,3 +65,41 @@
   </script>
 </body>
 </html>
+<script src="https://www.paypal.com/sdk/js?client-id=VOTRE_CLIENT_ID&currency=EUR"></script>
+<script>
+  function showPaypal() {
+    paypal.Buttons({
+      createOrder: function(data, actions) {
+        return actions.order.create({
+          purchase_units: [{
+            amount: {
+              value: '15.00'
+            },
+            description: 'Session de traduction'
+          }]
+        });
+      },
+      onApprove: function(data, actions) {
+        return actions.order.capture().then(function(details) {
+          document.getElementById('paypal-button-container').innerHTML =
+            "<p style='color:green;'>✅ Paiement effectué par " + details.payer.name.given_name + "</p>";
+        });
+      }
+    }).render('#paypal-button-container');
+  }
+
+  document.getElementById('booking-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const date = document.getElementById('date').value;
+    const time = document.getElementById('time').value;
+    const specialty = document.getElementById('specialty').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+
+    document.getElementById('confirmation-message').textContent =
+      `✅ Réservation confirmée pour ${specialty} le ${date} à ${time}.
+       📧 Email : ${email} | 📞 Téléphone : ${phone}`;
+
+    showPaypal();
+  });
+</script>
